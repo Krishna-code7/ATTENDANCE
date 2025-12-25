@@ -4,17 +4,19 @@
     <title>Attendance Guardian</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: center; padding: 20px; background: #f0f2f5; }
+        body { font-family: 'Segoe UI', sans-serif; text-align: center; padding: 20px; background: #f0f2f5; }
         .card { max-width: 400px; margin: auto; background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
         h1 { color: #2c3e50; margin-bottom: 5px; }
         .stat { font-size: 32px; font-weight: bold; color: #3498db; margin: 15px 0; }
+        .input-group { display: flex; justify-content: space-around; margin: 15px 0; }
+        input { width: 60px; padding: 8px; border-radius: 5px; border: 1px solid #ddd; text-align: center; }
         .goal-box { margin: 15px 0; padding: 10px; background: #e8f4fd; border-radius: 10px; }
-        select { padding: 5px; border-radius: 5px; border: 1px solid #ddd; }
-        button { padding: 12px 20px; font-size: 16px; cursor: pointer; border-radius: 8px; border: none; transition: 0.3s; width: 45%; }
+        button { padding: 12px; font-size: 16px; cursor: pointer; border-radius: 8px; border: none; transition: 0.3s; width: 48%; }
         .btn-p { background: #27ae60; color: white; }
         .btn-a { background: #e67e22; color: white; }
         .btn-r { background: #95a5a6; color: white; margin-top: 20px; width: 100%; }
-        .advice { margin-top: 20px; padding: 15px; border-radius: 10px; background: #fff3cd; color: #856404; font-weight: 500; }
+        .advice { margin-top: 20px; padding: 15px; border-radius: 10px; background: #fff3cd; color: #856404; font-weight: 500; min-height: 40px; }
+        label { display: block; font-size: 12px; color: #666; }
     </style>
 </head>
 <body>
@@ -23,67 +25,88 @@
         <h1>Attendance</h1>
         <div id="percentage" class="stat">0%</div>
         
+        <div class="input-group">
+            <div>
+                <label>Attended</label>
+                <input type="number" id="attInput" oninput="manualUpdate()">
+            </div>
+            <div>
+                <label>Total Classes</label>
+                <input type="number" id="totalInput" oninput="manualUpdate()">
+            </div>
+        </div>
+
         <div class="goal-box">
             My Target: 
             <select id="goalSelect" onchange="updateUI()">
                 <option value="75">75% (Standard)</option>
                 <option value="80">80% (Scholarship)</option>
                 <option value="85">85% (Safe Zone)</option>
-                <option value="90">90% (Top Tier)</option>
             </select>
         </div>
 
-        <p>Attended: <span id="att">0</span> | Total: <span id="total">0</span></p>
-        
         <div style="display: flex; justify-content: space-between;">
             <button class="btn-p" onclick="add(true)">Present (+)</button>
             <button class="btn-a" onclick="add(false)">Absent (-)</button>
         </div>
 
-        <div id="status" class="advice">Calculating...</div>
+        <div id="status" class="advice">Enter your data to see advice</div>
 
-        <button class="btn-r" onclick="resetData()">Reset Semester</button>
+        <button class="btn-r" onclick="resetData()">Reset Everything</button>
     </div>
 
     <script>
-        // Load data or defaults
-        let attended = parseInt(localStorage.getItem('att')) || 183;
-        let conducted = parseInt(localStorage.getItem('total')) || 339;
+        // Load data or start with 0
+        let attended = parseInt(localStorage.getItem('att')) || 0;
+        let conducted = parseInt(localStorage.getItem('total')) || 0;
+
+        // Fill inputs with current values
+        document.getElementById('attInput').value = attended;
+        document.getElementById('totalInput').value = conducted;
+
+        function manualUpdate() {
+            attended = parseInt(document.getElementById('attInput').value) || 0;
+            conducted = parseInt(document.getElementById('totalInput').value) || 0;
+            updateUI();
+        }
 
         function updateUI() {
-            let target = parseInt(document.getElementById('goalSelect').value);
-            let targetDecimal = target / 100;
-            
-            let per = (attended / conducted * 100).toFixed(2);
-            document.getElementById('percentage').innerText = per + "%";
-            document.getElementById('att').innerText = attended;
-            document.getElementById('total').innerText = conducted;
+            if (conducted === 0) {
+                document.getElementById('percentage').innerText = "0%";
+                document.getElementById('status').innerText = "Enter total classes to begin";
+                return;
+            }
 
+            let target = parseInt(document.getElementById('goalSelect').value) / 100;
+            let per = (attended / conducted * 100).toFixed(2);
+            
+            document.getElementById('percentage').innerText = per + "%";
+            
             localStorage.setItem('att', attended);
             localStorage.setItem('total', conducted);
 
             let statusEl = document.getElementById('status');
-            if (per < target) {
-                // Formula for classes needed to reach target
-                let need = Math.ceil((targetDecimal * conducted - attended) / (1 - targetDecimal));
-                statusEl.innerText = "⚠️ You must attend " + need + " more classes to hit " + target + "%.";
-                statusEl.style.background = "#f8d7da"; statusEl.style.color = "#721c24";
+            if (per < (target * 100)) {
+                let need = Math.ceil((target * conducted - attended) / (1 - target));
+                statusEl.innerText = "⚠️ Attend " + need + " more classes to hit " + (target * 100) + "%.";
+                statusEl.style.background = "#f8d7da";
             } else {
-                // Formula for classes that can be missed while staying above target
-                let skip = Math.floor((attended - targetDecimal * conducted) / targetDecimal);
-                statusEl.innerText = "✅ Safe! You can skip " + skip + " classes and stay above " + target + "%.";
-                statusEl.style.background = "#d4edda"; statusEl.style.color = "#155724";
+                let skip = Math.floor((attended - target * conducted) / target);
+                statusEl.innerText = "✅ You can skip " + skip + " classes.";
+                statusEl.style.background = "#d4edda";
             }
         }
 
         function add(isPresent) {
             conducted++;
             if (isPresent) attended++;
+            document.getElementById('attInput').value = attended;
+            document.getElementById('totalInput').value = conducted;
             updateUI();
         }
 
         function resetData() {
-            if (confirm("Reset everything for the new semester?")) {
+            if (confirm("Reset everything to 0?")) {
                 localStorage.clear();
                 location.reload();
             }
