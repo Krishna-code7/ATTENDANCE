@@ -1,163 +1,174 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Attendance Guardian Pro</title>
+    <title>Guardian Dashboard</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
     <style>
-        :root { --bg: #f0f2f5; --card: #ffffff; --text: #2c3e50; --accent: #3498db; }
-        [data-theme="dark"] { --bg: #1a1a1a; --card: #2d2d2d; --text: #ffffff; --accent: #5dade2; }
-        body { font-family: 'Segoe UI', sans-serif; text-align: center; padding: 20px; background: var(--bg); color: var(--text); transition: 0.3s; }
-        .card { max-width: 400px; margin: auto; background: var(--card); padding: 25px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+        :root { --bg: #0f172a; --card: #1e293b; --accent: #38bdf8; --green: #22c55e; --red: #ef4444; --text: #f8fafc; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 10px; }
+        .app-container { width: 100%; max-width: 380px; background: var(--card); padding: 25px; border-radius: 30px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); }
         
-        /* New: Health Badge */
-        .badge { display: inline-block; padding: 5px 15px; border-radius: 20px; font-size: 12px; font-weight: bold; margin-bottom: 10px; text-transform: uppercase; }
-        .badge-safe { background: #d4edda; color: #155724; }
-        .badge-warn { background: #fff3cd; color: #856404; }
-        .badge-crit { background: #f8d7da; color: #721c24; }
+        /* Header & Info */
+        .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .logo-text { font-size: 11px; font-weight: 900; color: var(--accent); letter-spacing: 1px; }
 
-        .header-info { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; font-size: 14px; font-weight: bold; color: var(--accent); }
-        .meter-container { width: 100%; height: 12px; background: #e0e0e0; border-radius: 10px; margin: 15px 0; overflow: hidden; }
-        #meterFill { height: 100%; width: 0%; transition: 0.8s ease-in-out; }
-        
-        .stat { font-size: 38px; font-weight: bold; color: var(--accent); }
-        .input-group { display: flex; justify-content: space-around; margin: 15px 0; }
-        input { width: 65px; padding: 10px; border-radius: 10px; border: 1px solid #ddd; text-align: center; background: var(--bg); color: var(--text); font-weight: bold; }
-        
-        .btn-container { display: flex; justify-content: space-between; gap: 10px; margin-top: 15px; }
-        button { padding: 12px; font-size: 14px; cursor: pointer; border-radius: 12px; border: none; width: 48%; font-weight: bold; }
-        .btn-p { background: #27ae60; color: white; }
-        .btn-a { background: #e67e22; color: white; }
-        .btn-util { background: var(--accent); color: white; width: 100%; margin-top: 10px; }
-        
-        .advice { margin-top: 20px; padding: 15px; border-radius: 12px; font-weight: 600; font-size: 13px; line-height: 1.5; }
-        .credit { margin-top: 30px; font-size: 11px; color: #888; border-top: 1px solid #eee; padding-top: 15px; }
-        .credit a { color: var(--accent); text-decoration: none; font-weight: bold; }
+        /* Sync Panel */
+        #editSection { display: none; background: rgba(255,255,255,0.05); padding: 15px; border-radius: 20px; margin-bottom: 20px; border: 1px solid #334155; }
+        .input-row { display: flex; justify-content: space-around; gap: 10px; }
+        input { width: 80px; padding: 10px; border-radius: 10px; border: 1px solid #334155; background: var(--bg); color: white; text-align: center; font-weight: bold; }
+
+        /* Circular Progress */
+        .circle-box { position: relative; width: 160px; height: 160px; margin: 0 auto 20px; }
+        svg { transform: rotate(-90deg); width: 100%; height: 100%; }
+        circle { fill: none; stroke-width: 12; stroke-linecap: round; transition: stroke-dashoffset 1s ease; }
+        .bg-circle { stroke: #334155; }
+        .progress-circle { stroke: var(--accent); stroke-dasharray: 440; stroke-dashoffset: 440; }
+        .percentage-text { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; }
+        #perValue { font-size: 32px; font-weight: 800; display: block; }
+        #statusLabel { font-size: 9px; text-transform: uppercase; color: #94a3b8; }
+
+        /* Stats & Buttons */
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+        .stat-card { background: rgba(255,255,255,0.03); padding: 12px; border-radius: 15px; text-align: center; }
+        .btn-container { display: flex; gap: 10px; margin-bottom: 15px; }
+        .btn { flex: 1; padding: 15px; border: none; border-radius: 15px; font-weight: 700; cursor: pointer; transition: 0.2s; }
+        .btn-p { background: var(--green); color: #052e16; }
+        .btn-a { background: var(--red); color: #450a0a; }
+        .btn-share { width: 100%; background: #6366f1; color: white; padding: 12px; border-radius: 15px; border: none; font-weight: 700; cursor: pointer; margin-bottom: 10px; }
+
+        .smart-advice { background: rgba(56, 189, 248, 0.05); padding: 15px; border-radius: 15px; font-size: 13px; color: var(--accent); text-align: center; margin-bottom: 15px; }
+        .btn-reset { width: 100%; background: transparent; color: #475569; padding: 5px; border: none; font-size: 10px; text-decoration: underline; cursor: pointer; }
+
+        /* About Me / Credits Section */
+        .footer-credits { margin-top: 25px; padding-top: 20px; border-top: 1px solid #334155; text-align: center; }
+        .footer-credits p { font-size: 10px; color: #64748b; margin: 3px 0; }
+        .footer-credits a { color: var(--accent); text-decoration: none; font-weight: 800; font-size: 12px; }
     </style>
 </head>
 <body>
 
-    <div class="card">
-        <div class="header-info">
-            <span id="dayDisplay">Today</span>
-            <span id="clock">00:00</span>
-        </div>
-
-        <div id="healthBadge" class="badge">Checking...</div>
-        <div id="percentage" class="stat">0%</div>
-        
-        <div class="meter-container">
-            <div id="meterFill"></div>
-        </div>
-
-        <div class="input-group">
-            <div><label style="font-size:10px; opacity:0.7;">ATTENDED</label><br>
-                <input type="number" id="attInput" oninput="manualUpdate()"></div>
-            <div><label style="font-size:10px; opacity:0.7;">TOTAL</label><br>
-                <input type="number" id="totalInput" oninput="manualUpdate()"></div>
-        </div>
-
-        <div class="btn-container">
-            <button class="btn-p" onclick="add(true)">Present (+)</button>
-            <button class="btn-a" onclick="add(false)">Absent (-)</button>
-        </div>
-
-        <div id="status" class="advice">Enter data to analyze.</div>
-        
-        <button class="btn-util" onclick="shareApp()">📤 Share App</button>
-        <button class="btn-util" style="background:#6c757d;" onclick="toggleTheme()">🌓 Dark Mode</button>
-        
-        <div class="credit">
-            Developed By - <a href="https://www.linkedin.com/in/krishna-solanki-355942367" target="_blank">Krishna Solanki</a><br>
-            B.Tech CSE (AI & DS) | Batch 2025-29 | Poornima University
-        </div>
+<div class="app-container">
+    <div class="top-bar">
+        <span class="logo-text">GUARDIAN v2.0</span>
+        <button onclick="toggleEdit()" style="background:var(--accent); color:white; border:none; padding:5px 12px; border-radius:10px; font-size:10px; font-weight:bold; cursor:pointer;">✎ENTER YOU DATA FROM TCSiON</button>
     </div>
 
-    <script>
-        let attended = parseInt(localStorage.getItem('att')) || 0;
-        let conducted = parseInt(localStorage.getItem('total')) || 0;
-        let theme = localStorage.getItem('theme') || 'light';
+    <div id="editSection">
+        <div class="input-row">
+            <div><label style="font-size: 8px; color:#94a3b8;">CLASS ATTENDED</label>
+                <input type="number" id="attInput" oninput="manualUpdate()"></div>
+            <div><label style="font-size: 8px; color:#94a3b8;">TOTAL CLASSES</label>
+                <input type="number" id="totalInput" oninput="manualUpdate()"></div>
+        </div>
+        <button onclick="toggleEdit()" style="width:100%; margin-top:10px; background:transparent; border:1px solid var(--accent); color:var(--accent); border-radius:8px; padding:5px; font-size:10px;">SAVE & CLOSE</button>
+    </div>
 
-        document.documentElement.setAttribute('data-theme', theme);
-        document.getElementById('attInput').value = attended || "";
-        document.getElementById('totalInput').value = conducted || "";
+    <div class="circle-box">
+        <svg><circle class="bg-circle" cx="80" cy="80" r="70"></circle><circle class="progress-circle" id="circle" cx="80" cy="80" r="70"></circle></svg>
+        <div class="percentage-text"><span id="perValue">0%</span><span id="statusLabel">IDLE</span></div>
+    </div>
 
-        function updateClock() {
-            const now = new Date();
-            const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-            document.getElementById('dayDisplay').innerText = days[now.getDay()];
-            document.getElementById('clock').innerText = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        }
-        setInterval(updateClock, 1000); updateClock();
+    <div class="stats-grid">
+        <div class="stat-card"><span style="font-size:9px; color:#64748b;">PRESENT</span><br><b id="attVal">0</b></div>
+        <div class="stat-card"><span style="font-size:9px; color:#64748b;">TOTAL</span><br><b id="totalVal">0</b></div>
+    </div>
 
-        function toggleTheme() {
-            theme = (theme === 'light') ? 'dark' : 'light';
-            document.documentElement.setAttribute('data-theme', theme);
-            localStorage.setItem('theme', theme);
-        }
+    <div class="btn-container">
+        <button class="btn btn-p" onclick="add(1)">PRESENT</button>
+        <button class="btn btn-a" onclick="add(0)">ABSENT</button>
+    </div>
 
-        function manualUpdate() {
-            attended = parseInt(document.getElementById('attInput').value) || 0;
-            conducted = parseInt(document.getElementById('totalInput').value) || 0;
-            updateUI();
-        }
+    <div id="adviceBox" class="smart-advice">Enter TCS iON data to start monitoring.</div>
 
-        function updateUI() {
-            if (conducted === 0 || conducted < attended) {
-                document.getElementById('percentage').innerText = "0.00%";
-                document.getElementById('healthBadge').className = "badge";
-                document.getElementById('healthBadge').innerText = "Enter Data";
-                return;
-            }
+    <button class="btn-share" onclick="shareApp()">📤 SHARE WITH BATCH</button>
+    
+    <button class="btn-reset" onclick="resetData()">Reset Statistics</button>
 
-            let per = (attended / conducted * 100).toFixed(2);
-            document.getElementById('percentage').innerText = per + "%";
-            let meter = document.getElementById('meterFill');
-            meter.style.width = per + "%";
-            
-            let badge = document.getElementById('healthBadge');
-            let statusEl = document.getElementById('status');
+    <div class="footer-credits">
+        <p>Ideated & Developed By</p>
+        <a href="https://www.linkedin.com/in/krishna-solanki-355942367" target="_blank">KRISHNA SOLANKI</a>
+        <p>B.Tech AI & DS | Batch 2025-29</p>
+        <p>Poornima University, Jaipur</p>
+    </div>
+</div>
 
-            if (per >= 80) {
-                meter.style.backgroundColor = "#27ae60";
-                badge.className = "badge badge-safe";
-                badge.innerText = "Status: Safe";
-                let skip = Math.floor((attended - 0.75 * conducted) / 0.75);
-                statusEl.innerHTML = "✅ You have a strong margin! You can skip <b>" + skip + "</b> classes to maintain 75%.";
-                statusEl.style.background = "#d4edda";
-            } else if (per >= 75) {
-                meter.style.backgroundColor = "#f1c40f";
-                badge.className = "badge badge-warn";
-                badge.innerText = "Status: Warning";
-                let skip = Math.floor((attended - 0.75 * conducted) / 0.75);
-                statusEl.innerHTML = "⚠️ You are on the edge. You can only skip <b>" + skip + "</b> more classes to stay at 75%.";
-                statusEl.style.background = "#fff3cd";
-            } else {
-                meter.style.backgroundColor = "#e74c3c";
-                badge.className = "badge badge-crit";
-                badge.innerText = "Status: Critical";
-                let need = Math.ceil((0.75 * conducted - attended) / 0.25);
-                statusEl.innerHTML = "🚨 Shortage Alert! You must attend <b>" + need + "</b> more classes to hit 75%.";
-                statusEl.style.background = "#f8d7da";
-            }
+<script>
+    let attended = parseInt(localStorage.getItem('att')) || 0;
+    let total = parseInt(localStorage.getItem('total')) || 0;
+    let wasBelow = true;
 
-            localStorage.setItem('att', attended);
-            localStorage.setItem('total', conducted);
-        }
+    function toggleEdit() {
+        let section = document.getElementById('editSection');
+        section.style.display = (section.style.display === 'block') ? 'none' : 'block';
+    }
 
-        function add(isPresent) {
-            conducted++;
-            if (isPresent) attended++;
-            document.getElementById('attInput').value = attended;
-            document.getElementById('totalInput').value = conducted;
-            updateUI();
-        }
-
-        async function shareApp() {
-            try { await navigator.share({ title: 'Attendance Guardian', url: window.location.href }); } 
-            catch { alert("Link copied!"); navigator.clipboard.writeText(window.location.href); }
-        }
-
+    function manualUpdate() {
+        attended = parseInt(document.getElementById('attInput').value) || 0;
+        total = parseInt(document.getElementById('totalInput').value) || 0;
         updateUI();
-    </script>
+    }
+
+    function add(val) {
+        total++;
+        if(val) attended++;
+        document.getElementById('attInput').value = attended;
+        document.getElementById('totalInput').value = total;
+        updateUI();
+    }
+
+    function updateUI() {
+        if (total === 0) return;
+        let per = (attended / total * 100).toFixed(1);
+        document.getElementById('perValue').innerText = per + "%";
+        document.getElementById('attVal').innerText = attended;
+        document.getElementById('totalVal').innerText = total;
+
+        const circle = document.getElementById('circle');
+        const offset = 440 - (440 * per) / 100;
+        circle.style.strokeDashoffset = offset;
+
+        if (per >= 75 && wasBelow) {
+            confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+            wasBelow = false;
+        } else if (per < 75) { wasBelow = true; }
+
+        let color = per >= 80 ? "#22c55e" : per >= 75 ? "#eab308" : "#ef4444";
+        circle.style.stroke = color;
+        document.getElementById('perValue').style.color = color;
+
+        let advice = "";
+        if (per < 75) {
+            let need = Math.ceil((0.75 * total - attended) / 0.25);
+            advice = "🚨 Attend " + need + " more classes to hit 75%.";
+            document.getElementById('statusLabel').innerText = "CRITICAL";
+        } else {
+            let skip = Math.floor((attended - 0.75 * total) / 0.75);
+            advice = "✅ Safe Zone! You can skip " + skip + " classes.";
+            document.getElementById('statusLabel').innerText = "SAFE";
+        }
+        document.getElementById('adviceBox').innerText = advice;
+
+        localStorage.setItem('att', attended);
+        localStorage.setItem('total', total);
+    }
+
+    async function shareApp() {
+        try {
+            await navigator.share({ title: 'Attendance Guardian', url: window.location.href });
+        } catch (err) {
+            navigator.clipboard.writeText(window.location.href);
+            alert("Link copied! Paste it in your WhatsApp group.");
+        }
+    }
+
+    function resetData() {
+        if(confirm("Reset all data?")) { localStorage.clear(); location.reload(); }
+    }
+
+    document.getElementById('attInput').value = attended || "";
+    document.getElementById('totalInput').value = total || "";
+    updateUI();
+</script>
 </body>
 </html>
