@@ -7,28 +7,40 @@
         :root { --bg: #f0f2f5; --card: #ffffff; --text: #2c3e50; --accent: #3498db; }
         [data-theme="dark"] { --bg: #1a1a1a; --card: #2d2d2d; --text: #ffffff; --accent: #5dade2; }
         body { font-family: 'Segoe UI', sans-serif; text-align: center; padding: 20px; background: var(--bg); color: var(--text); transition: 0.3s; }
-        .card { max-width: 400px; margin: auto; background: var(--card); padding: 25px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+        .card { max-width: 400px; margin: auto; background: var(--card); padding: 25px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); position: relative; }
+        
+        .header-info { margin-bottom: 20px; text-align: left; border-left: 4px solid var(--accent); padding-left: 15px; }
+        #clock { font-size: 14px; font-weight: bold; color: var(--accent); opacity: 0.8; }
+        #greeting { font-size: 18px; font-weight: bold; }
+
         .meter-container { width: 100%; height: 12px; background: #e0e0e0; border-radius: 10px; margin: 20px 0; overflow: hidden; }
-        #meterFill { height: 100%; width: 0%; transition: 0.5s; }
-        .stat { font-size: 32px; font-weight: bold; color: var(--accent); margin-bottom: 5px; }
+        #meterFill { height: 100%; width: 0%; transition: 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        
+        .stat { font-size: 38px; font-weight: bold; color: var(--accent); margin-bottom: 5px; }
         .input-group { display: flex; justify-content: space-around; margin: 15px 0; }
-        input { width: 65px; padding: 8px; border-radius: 8px; border: 1px solid #ddd; text-align: center; background: var(--bg); color: var(--text); }
+        input { width: 65px; padding: 10px; border-radius: 10px; border: 1px solid #ddd; text-align: center; background: var(--bg); color: var(--text); font-weight: bold; }
+        
         .btn-container { display: flex; justify-content: space-between; gap: 10px; margin-top: 15px; }
-        button { padding: 12px; font-size: 16px; cursor: pointer; border-radius: 8px; border: none; width: 48%; }
-        .btn-p { background: #27ae60; color: white; }
-        .btn-a { background: #e67e22; color: white; }
-        .btn-theme { background: var(--accent); color: white; width: 100%; margin-bottom: 15px; }
-        .advice { margin-top: 20px; padding: 15px; border-radius: 10px; font-weight: 600; font-size: 14px; }
-        .credit { margin-top: 30px; font-size: 12px; color: #888; border-top: 1px solid #eee; padding-top: 15px; }
+        button { padding: 12px; font-size: 16px; cursor: pointer; border-radius: 12px; border: none; width: 48%; transition: transform 0.2s; }
+        button:active { transform: scale(0.95); }
+        .btn-p { background: #27ae60; color: white; box-shadow: 0 4px #1e8449; }
+        .btn-a { background: #e67e22; color: white; box-shadow: 0 4px #b35f18; }
+        .btn-theme { background: var(--accent); color: white; width: 100%; margin-bottom: 15px; font-weight: bold; }
+        
+        .advice { margin-top: 20px; padding: 15px; border-radius: 12px; font-weight: 600; font-size: 14px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.05); }
+        .credit { margin-top: 30px; font-size: 11px; color: #888; border-top: 1px solid #eee; padding-top: 15px; }
         .credit a { color: var(--accent); text-decoration: none; font-weight: bold; }
-        .credit a:hover { text-decoration: underline; }
     </style>
 </head>
 <body>
 
     <div class="card">
-        <button class="btn-theme" onclick="toggleTheme()">🌓 Switch Theme</button>
-        <h1>Attendance</h1>
+        <div class="header-info">
+            <div id="clock">00:00:00</div>
+            <div id="greeting">Welcome, Student!</div>
+        </div>
+
+        <button class="btn-theme" onclick="toggleTheme()">🌓 Change Theme</button>
         
         <div id="percentage" class="stat">0%</div>
         
@@ -37,9 +49,9 @@
         </div>
 
         <div class="input-group">
-            <div><label style="font-size:12px">Attended</label><br>
+            <div><label style="font-size:11px; font-weight:bold; opacity:0.7;">ATTENDED</label><br>
                 <input type="number" id="attInput" placeholder="0" oninput="manualUpdate()"></div>
-            <div><label style="font-size:12px">Total</label><br>
+            <div><label style="font-size:11px; font-weight:bold; opacity:0.7;">TOTAL</label><br>
                 <input type="number" id="totalInput" placeholder="0" oninput="manualUpdate()"></div>
         </div>
 
@@ -48,12 +60,12 @@
             <button class="btn-a" onclick="add(false)">Absent (-)</button>
         </div>
 
-        <div id="status" class="advice">Enter your data from TCS iON</div>
+        <div id="status" class="advice">Sync your TCS iON data to start.</div>
         
-        <button onclick="resetData()" style="background:none; color:#888; margin-top:20px; cursor:pointer; border:none; text-decoration:underline; font-size:11px;">Reset Data</button>
+        <button onclick="resetData()" style="background:none; color:#888; margin-top:20px; cursor:pointer; border:none; text-decoration:underline; font-size:10px;">Reset My Data</button>
 
         <div class="credit">
-            Ideated By - <a href="https://www.linkedin.com/in/krishna-solanki-355942367" target="_blank">Krishna Solanki</a><br>
+            Developed By - <a href="https://www.linkedin.com/in/krishna-solanki-355942367" target="_blank">Krishna Solanki</a><br>
             B.Tech CSE (AI & DS) | Batch 2025-29<br>
             Poornima University
         </div>
@@ -67,6 +79,20 @@
         document.documentElement.setAttribute('data-theme', theme);
         document.getElementById('attInput').value = attended || "";
         document.getElementById('totalInput').value = conducted || "";
+
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('clock').innerText = now.toLocaleTimeString();
+            
+            const hrs = now.getHours();
+            let greet = "Good Night!";
+            if (hrs < 12) greet = "Good Morning! ☀️";
+            else if (hrs < 17) greet = "Good Afternoon! ☕";
+            else greet = "Good Evening! 🌙";
+            document.getElementById('greeting').innerText = greet;
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
 
         function toggleTheme() {
             theme = (theme === 'light') ? 'dark' : 'light';
@@ -84,14 +110,13 @@
             if (conducted === 0 || conducted < attended) {
                 document.getElementById('percentage').innerText = "0.00%";
                 document.getElementById('meterFill').style.width = "0%";
-                document.getElementById('status').innerText = "Enter your data from TCS iON";
+                document.getElementById('status').innerText = "Enter your current classes from TCS iON.";
                 document.getElementById('status').style.background = "transparent";
                 return;
             }
 
             let per = (attended / conducted * 100).toFixed(2);
             document.getElementById('percentage').innerText = per + "%";
-            
             let meter = document.getElementById('meterFill');
             meter.style.width = per + "%";
             
@@ -106,11 +131,11 @@
             if (per < 75) {
                 let need = Math.ceil((0.75 * conducted - attended) / 0.25);
                 statusEl.innerHTML = "⚠️ Shortage! Attend <span style='color:#d32f2f'>" + need + "</span> more classes to maintain 75%.";
-                statusEl.style.background = "#f8d7da"; statusEl.style.color = "#721c24";
+                statusEl.style.background = "#f8d7da";
             } else {
                 let skip = Math.floor((attended - 0.75 * conducted) / 0.75);
                 statusEl.innerHTML = "✅ Safe! You can skip <span style='color:#1b5e20'>" + skip + "</span> classes to maintain 75%.";
-                statusEl.style.background = "#d4edda"; statusEl.style.color = "#155724";
+                statusEl.style.background = "#d4edda";
             }
         }
 
@@ -123,9 +148,7 @@
         }
 
         function resetData() {
-            if (confirm("Reset everything?")) {
-                localStorage.clear(); location.reload();
-            }
+            if (confirm("Reset everything?")) { localStorage.clear(); location.reload(); }
         }
         updateUI();
     </script>
