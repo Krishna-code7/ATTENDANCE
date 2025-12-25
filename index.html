@@ -4,19 +4,12 @@
     <title>Attendance Guardian</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        :root {
-            --bg: #f0f2f5; --card: #ffffff; --text: #2c3e50; --accent: #3498db;
-        }
-        [data-theme="dark"] {
-            --bg: #1a1a1a; --card: #2d2d2d; --text: #ffffff; --accent: #5dade2;
-        }
+        :root { --bg: #f0f2f5; --card: #ffffff; --text: #2c3e50; --accent: #3498db; }
+        [data-theme="dark"] { --bg: #1a1a1a; --card: #2d2d2d; --text: #ffffff; --accent: #5dade2; }
         body { font-family: 'Segoe UI', sans-serif; text-align: center; padding: 20px; background: var(--bg); color: var(--text); transition: 0.3s; }
         .card { max-width: 400px; margin: auto; background: var(--card); padding: 25px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
-        
-        /* Meter Styling */
         .meter-container { width: 100%; height: 12px; background: #e0e0e0; border-radius: 10px; margin: 20px 0; overflow: hidden; }
         #meterFill { height: 100%; width: 0%; transition: 0.5s; }
-        
         .stat { font-size: 32px; font-weight: bold; color: var(--accent); margin-bottom: 5px; }
         .input-group { display: flex; justify-content: space-around; margin: 15px 0; }
         input { width: 65px; padding: 8px; border-radius: 8px; border: 1px solid #ddd; text-align: center; background: var(--bg); color: var(--text); }
@@ -25,8 +18,10 @@
         .btn-p { background: #27ae60; color: white; }
         .btn-a { background: #e67e22; color: white; }
         .btn-theme { background: var(--accent); color: white; width: 100%; margin-bottom: 15px; }
-        .advice { margin-top: 20px; padding: 15px; border-radius: 10px; font-weight: 500; }
-        .credit { margin-top: 30px; font-size: 12px; color: #888; }
+        .advice { margin-top: 20px; padding: 15px; border-radius: 10px; font-weight: 600; font-size: 14px; }
+        .credit { margin-top: 30px; font-size: 12px; color: #888; border-top: 1px solid #eee; padding-top: 15px; }
+        .credit a { color: var(--accent); text-decoration: none; font-weight: bold; }
+        .credit a:hover { text-decoration: underline; }
     </style>
 </head>
 <body>
@@ -43,9 +38,9 @@
 
         <div class="input-group">
             <div><label style="font-size:12px">Attended</label><br>
-                <input type="number" id="attInput" oninput="manualUpdate()"></div>
+                <input type="number" id="attInput" placeholder="0" oninput="manualUpdate()"></div>
             <div><label style="font-size:12px">Total</label><br>
-                <input type="number" id="totalInput" oninput="manualUpdate()"></div>
+                <input type="number" id="totalInput" placeholder="0" oninput="manualUpdate()"></div>
         </div>
 
         <div class="btn-container">
@@ -53,13 +48,14 @@
             <button class="btn-a" onclick="add(false)">Absent (-)</button>
         </div>
 
-        <div id="status" class="advice">Enter data to begin</div>
+        <div id="status" class="advice">Enter your data from TCS iON</div>
         
-        <button onclick="resetData()" style="background:none; color:#888; margin-top:20px; cursor:pointer; border:none; text-decoration:underline; font-size:12px;">Reset Data</button>
+        <button onclick="resetData()" style="background:none; color:#888; margin-top:20px; cursor:pointer; border:none; text-decoration:underline; font-size:11px;">Reset Data</button>
 
         <div class="credit">
-            Ideated By - <b>Krishna Solanki</b><br>
-            B.Tech CSE (AI & DS) 2025-2029 | Poornima University
+            Ideated By - <a href="https://www.linkedin.com/in/krishna-solanki-355942367" target="_blank">Krishna Solanki</a><br>
+            B.Tech CSE (AI & DS) | Batch 2025-29<br>
+            Poornima University
         </div>
     </div>
 
@@ -88,23 +84,20 @@
             if (conducted === 0 || conducted < attended) {
                 document.getElementById('percentage').innerText = "0.00%";
                 document.getElementById('meterFill').style.width = "0%";
+                document.getElementById('status').innerText = "Enter your data from TCS iON";
+                document.getElementById('status').style.background = "transparent";
                 return;
             }
 
             let per = (attended / conducted * 100).toFixed(2);
             document.getElementById('percentage').innerText = per + "%";
             
-            // Meter Logic
             let meter = document.getElementById('meterFill');
             meter.style.width = per + "%";
             
-            if (per >= 80) {
-                meter.style.backgroundColor = "#27ae60"; // Green
-            } else if (per >= 75) {
-                meter.style.backgroundColor = "#f1c40f"; // Yellow
-            } else {
-                meter.style.backgroundColor = "#e74c3c"; // Red
-            }
+            if (per >= 80) meter.style.backgroundColor = "#27ae60";
+            else if (per >= 75) meter.style.backgroundColor = "#f1c40f";
+            else meter.style.backgroundColor = "#e74c3c";
 
             localStorage.setItem('att', attended);
             localStorage.setItem('total', conducted);
@@ -112,11 +105,11 @@
             let statusEl = document.getElementById('status');
             if (per < 75) {
                 let need = Math.ceil((0.75 * conducted - attended) / 0.25);
-                statusEl.innerText = "⚠️ Shortage! Attend " + need + " more classes.";
+                statusEl.innerHTML = "⚠️ Shortage! Attend <span style='color:#d32f2f'>" + need + "</span> more classes to maintain 75%.";
                 statusEl.style.background = "#f8d7da"; statusEl.style.color = "#721c24";
             } else {
                 let skip = Math.floor((attended - 0.75 * conducted) / 0.75);
-                statusEl.innerText = "✅ Safe! You can skip " + skip + " classes.";
+                statusEl.innerHTML = "✅ Safe! You can skip <span style='color:#1b5e20'>" + skip + "</span> classes to maintain 75%.";
                 statusEl.style.background = "#d4edda"; statusEl.style.color = "#155724";
             }
         }
