@@ -1,33 +1,35 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Attendance Guardian</title>
+    <title>Attendance Guardian Pro</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         :root { --bg: #f0f2f5; --card: #ffffff; --text: #2c3e50; --accent: #3498db; }
         [data-theme="dark"] { --bg: #1a1a1a; --card: #2d2d2d; --text: #ffffff; --accent: #5dade2; }
         body { font-family: 'Segoe UI', sans-serif; text-align: center; padding: 20px; background: var(--bg); color: var(--text); transition: 0.3s; }
-        .card { max-width: 400px; margin: auto; background: var(--card); padding: 25px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); position: relative; }
+        .card { max-width: 400px; margin: auto; background: var(--card); padding: 25px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
         
-        .header-info { margin-bottom: 20px; text-align: left; border-left: 4px solid var(--accent); padding-left: 15px; }
-        #clock { font-size: 14px; font-weight: bold; color: var(--accent); opacity: 0.8; }
-        #greeting { font-size: 18px; font-weight: bold; }
+        /* New: Health Badge */
+        .badge { display: inline-block; padding: 5px 15px; border-radius: 20px; font-size: 12px; font-weight: bold; margin-bottom: 10px; text-transform: uppercase; }
+        .badge-safe { background: #d4edda; color: #155724; }
+        .badge-warn { background: #fff3cd; color: #856404; }
+        .badge-crit { background: #f8d7da; color: #721c24; }
 
-        .meter-container { width: 100%; height: 12px; background: #e0e0e0; border-radius: 10px; margin: 20px 0; overflow: hidden; }
-        #meterFill { height: 100%; width: 0%; transition: 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .header-info { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; font-size: 14px; font-weight: bold; color: var(--accent); }
+        .meter-container { width: 100%; height: 12px; background: #e0e0e0; border-radius: 10px; margin: 15px 0; overflow: hidden; }
+        #meterFill { height: 100%; width: 0%; transition: 0.8s ease-in-out; }
         
-        .stat { font-size: 38px; font-weight: bold; color: var(--accent); margin-bottom: 5px; }
+        .stat { font-size: 38px; font-weight: bold; color: var(--accent); }
         .input-group { display: flex; justify-content: space-around; margin: 15px 0; }
         input { width: 65px; padding: 10px; border-radius: 10px; border: 1px solid #ddd; text-align: center; background: var(--bg); color: var(--text); font-weight: bold; }
         
         .btn-container { display: flex; justify-content: space-between; gap: 10px; margin-top: 15px; }
-        button { padding: 12px; font-size: 16px; cursor: pointer; border-radius: 12px; border: none; width: 48%; transition: transform 0.2s; }
-        button:active { transform: scale(0.95); }
-        .btn-p { background: #27ae60; color: white; box-shadow: 0 4px #1e8449; }
-        .btn-a { background: #e67e22; color: white; box-shadow: 0 4px #b35f18; }
-        .btn-theme { background: var(--accent); color: white; width: 100%; margin-bottom: 15px; font-weight: bold; }
+        button { padding: 12px; font-size: 14px; cursor: pointer; border-radius: 12px; border: none; width: 48%; font-weight: bold; }
+        .btn-p { background: #27ae60; color: white; }
+        .btn-a { background: #e67e22; color: white; }
+        .btn-util { background: var(--accent); color: white; width: 100%; margin-top: 10px; }
         
-        .advice { margin-top: 20px; padding: 15px; border-radius: 12px; font-weight: 600; font-size: 14px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.05); }
+        .advice { margin-top: 20px; padding: 15px; border-radius: 12px; font-weight: 600; font-size: 13px; line-height: 1.5; }
         .credit { margin-top: 30px; font-size: 11px; color: #888; border-top: 1px solid #eee; padding-top: 15px; }
         .credit a { color: var(--accent); text-decoration: none; font-weight: bold; }
     </style>
@@ -36,12 +38,11 @@
 
     <div class="card">
         <div class="header-info">
-            <div id="clock">00:00:00</div>
-            <div id="greeting">Welcome, Student!</div>
+            <span id="dayDisplay">Today</span>
+            <span id="clock">00:00</span>
         </div>
 
-        <button class="btn-theme" onclick="toggleTheme()">🌓 Change Theme</button>
-        
+        <div id="healthBadge" class="badge">Checking...</div>
         <div id="percentage" class="stat">0%</div>
         
         <div class="meter-container">
@@ -49,10 +50,10 @@
         </div>
 
         <div class="input-group">
-            <div><label style="font-size:11px; font-weight:bold; opacity:0.7;">ATTENDED</label><br>
-                <input type="number" id="attInput" placeholder="0" oninput="manualUpdate()"></div>
-            <div><label style="font-size:11px; font-weight:bold; opacity:0.7;">TOTAL</label><br>
-                <input type="number" id="totalInput" placeholder="0" oninput="manualUpdate()"></div>
+            <div><label style="font-size:10px; opacity:0.7;">ATTENDED</label><br>
+                <input type="number" id="attInput" oninput="manualUpdate()"></div>
+            <div><label style="font-size:10px; opacity:0.7;">TOTAL</label><br>
+                <input type="number" id="totalInput" oninput="manualUpdate()"></div>
         </div>
 
         <div class="btn-container">
@@ -60,14 +61,14 @@
             <button class="btn-a" onclick="add(false)">Absent (-)</button>
         </div>
 
-        <div id="status" class="advice">Sync your TCS iON data to start.</div>
+        <div id="status" class="advice">Enter data to analyze.</div>
         
-        <button onclick="resetData()" style="background:none; color:#888; margin-top:20px; cursor:pointer; border:none; text-decoration:underline; font-size:10px;">Reset My Data</button>
-
+        <button class="btn-util" onclick="shareApp()">📤 Share App</button>
+        <button class="btn-util" style="background:#6c757d;" onclick="toggleTheme()">🌓 Dark Mode</button>
+        
         <div class="credit">
             Developed By - <a href="https://www.linkedin.com/in/krishna-solanki-355942367" target="_blank">Krishna Solanki</a><br>
-            B.Tech CSE (AI & DS) | Batch 2025-29<br>
-            Poornima University
+            B.Tech CSE (AI & DS) | Batch 2025-29 | Poornima University
         </div>
     </div>
 
@@ -82,17 +83,11 @@
 
         function updateClock() {
             const now = new Date();
-            document.getElementById('clock').innerText = now.toLocaleTimeString();
-            
-            const hrs = now.getHours();
-            let greet = "Good Night!";
-            if (hrs < 12) greet = "Good Morning! ☀️";
-            else if (hrs < 17) greet = "Good Afternoon! ☕";
-            else greet = "Good Evening! 🌙";
-            document.getElementById('greeting').innerText = greet;
+            const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+            document.getElementById('dayDisplay').innerText = days[now.getDay()];
+            document.getElementById('clock').innerText = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         }
-        setInterval(updateClock, 1000);
-        updateClock();
+        setInterval(updateClock, 1000); updateClock();
 
         function toggleTheme() {
             theme = (theme === 'light') ? 'dark' : 'light';
@@ -109,9 +104,8 @@
         function updateUI() {
             if (conducted === 0 || conducted < attended) {
                 document.getElementById('percentage').innerText = "0.00%";
-                document.getElementById('meterFill').style.width = "0%";
-                document.getElementById('status').innerText = "Enter your current classes from TCS iON.";
-                document.getElementById('status').style.background = "transparent";
+                document.getElementById('healthBadge').className = "badge";
+                document.getElementById('healthBadge').innerText = "Enter Data";
                 return;
             }
 
@@ -120,23 +114,34 @@
             let meter = document.getElementById('meterFill');
             meter.style.width = per + "%";
             
-            if (per >= 80) meter.style.backgroundColor = "#27ae60";
-            else if (per >= 75) meter.style.backgroundColor = "#f1c40f";
-            else meter.style.backgroundColor = "#e74c3c";
+            let badge = document.getElementById('healthBadge');
+            let statusEl = document.getElementById('status');
+
+            if (per >= 80) {
+                meter.style.backgroundColor = "#27ae60";
+                badge.className = "badge badge-safe";
+                badge.innerText = "Status: Safe";
+                let skip = Math.floor((attended - 0.75 * conducted) / 0.75);
+                statusEl.innerHTML = "✅ You have a strong margin! You can skip <b>" + skip + "</b> classes to maintain 75%.";
+                statusEl.style.background = "#d4edda";
+            } else if (per >= 75) {
+                meter.style.backgroundColor = "#f1c40f";
+                badge.className = "badge badge-warn";
+                badge.innerText = "Status: Warning";
+                let skip = Math.floor((attended - 0.75 * conducted) / 0.75);
+                statusEl.innerHTML = "⚠️ You are on the edge. You can only skip <b>" + skip + "</b> more classes to stay at 75%.";
+                statusEl.style.background = "#fff3cd";
+            } else {
+                meter.style.backgroundColor = "#e74c3c";
+                badge.className = "badge badge-crit";
+                badge.innerText = "Status: Critical";
+                let need = Math.ceil((0.75 * conducted - attended) / 0.25);
+                statusEl.innerHTML = "🚨 Shortage Alert! You must attend <b>" + need + "</b> more classes to hit 75%.";
+                statusEl.style.background = "#f8d7da";
+            }
 
             localStorage.setItem('att', attended);
             localStorage.setItem('total', conducted);
-
-            let statusEl = document.getElementById('status');
-            if (per < 75) {
-                let need = Math.ceil((0.75 * conducted - attended) / 0.25);
-                statusEl.innerHTML = "⚠️ Shortage! Attend <span style='color:#d32f2f'>" + need + "</span> more classes to maintain 75%.";
-                statusEl.style.background = "#f8d7da";
-            } else {
-                let skip = Math.floor((attended - 0.75 * conducted) / 0.75);
-                statusEl.innerHTML = "✅ Safe! You can skip <span style='color:#1b5e20'>" + skip + "</span> classes to maintain 75%.";
-                statusEl.style.background = "#d4edda";
-            }
         }
 
         function add(isPresent) {
@@ -147,9 +152,11 @@
             updateUI();
         }
 
-        function resetData() {
-            if (confirm("Reset everything?")) { localStorage.clear(); location.reload(); }
+        async function shareApp() {
+            try { await navigator.share({ title: 'Attendance Guardian', url: window.location.href }); } 
+            catch { alert("Link copied!"); navigator.clipboard.writeText(window.location.href); }
         }
+
         updateUI();
     </script>
 </body>
