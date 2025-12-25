@@ -4,24 +4,40 @@
     <title>Attendance Guardian</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        body { font-family: 'Segoe UI', sans-serif; text-align: center; padding: 20px; background: #f0f2f5; }
-        .card { max-width: 400px; margin: auto; background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
-        h1 { color: #2c3e50; margin-bottom: 5px; }
-        .stat { font-size: 32px; font-weight: bold; color: #3498db; margin: 15px 0; }
+        :root {
+            --bg: #f0f2f5;
+            --card: #ffffff;
+            --text: #2c3e50;
+            --subtext: #666;
+            --accent: #3498db;
+        }
+        [data-theme="dark"] {
+            --bg: #1a1a1a;
+            --card: #2d2d2d;
+            --text: #ffffff;
+            --subtext: #bbb;
+            --accent: #5dade2;
+        }
+        body { font-family: 'Segoe UI', sans-serif; text-align: center; padding: 20px; background: var(--bg); color: var(--text); transition: 0.3s; }
+        .card { max-width: 400px; margin: auto; background: var(--card); padding: 25px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+        .stat { font-size: 32px; font-weight: bold; color: var(--accent); margin: 15px 0; }
         .input-group { display: flex; justify-content: space-around; margin: 15px 0; }
-        input { width: 60px; padding: 8px; border-radius: 5px; border: 1px solid #ddd; text-align: center; }
-        .goal-box { margin: 15px 0; padding: 10px; background: #e8f4fd; border-radius: 10px; }
-        button { padding: 12px; font-size: 16px; cursor: pointer; border-radius: 8px; border: none; transition: 0.3s; width: 48%; }
+        input { width: 65px; padding: 8px; border-radius: 8px; border: 1px solid #ddd; text-align: center; background: var(--bg); color: var(--text); }
+        .goal-box { margin: 15px 0; padding: 10px; background: rgba(52, 152, 219, 0.1); border-radius: 10px; }
+        select { padding: 5px; border-radius: 5px; background: var(--bg); color: var(--text); }
+        .btn-container { display: flex; justify-content: space-between; gap: 10px; }
+        button { padding: 12px; font-size: 16px; cursor: pointer; border-radius: 8px; border: none; width: 48%; }
         .btn-p { background: #27ae60; color: white; }
         .btn-a { background: #e67e22; color: white; }
-        .btn-r { background: #95a5a6; color: white; margin-top: 20px; width: 100%; }
-        .advice { margin-top: 20px; padding: 15px; border-radius: 10px; background: #fff3cd; color: #856404; font-weight: 500; min-height: 40px; }
-        label { display: block; font-size: 12px; color: #666; }
+        .btn-theme { background: var(--accent); color: white; width: 100%; margin-bottom: 15px; }
+        .advice { margin-top: 20px; padding: 15px; border-radius: 10px; font-weight: 500; }
+        label { display: block; font-size: 12px; color: var(--subtext); margin-bottom: 5px; }
     </style>
 </head>
 <body>
 
     <div class="card">
+        <button class="btn-theme" onclick="toggleTheme()">🌓 Switch Theme</button>
         <h1>Attendance</h1>
         <div id="percentage" class="stat">0%</div>
         
@@ -45,24 +61,29 @@
             </select>
         </div>
 
-        <div style="display: flex; justify-content: space-between;">
+        <div class="btn-container">
             <button class="btn-p" onclick="add(true)">Present (+)</button>
             <button class="btn-a" onclick="add(false)">Absent (-)</button>
         </div>
 
-        <div id="status" class="advice">Enter your data to see advice</div>
-
-        <button class="btn-r" onclick="resetData()">Reset Everything</button>
+        <div id="status" class="advice">Enter data to begin</div>
+        <button onclick="resetData()" style="background:none; color:var(--subtext); margin-top:20px; cursor:pointer; border:none; text-decoration:underline;">Reset Everything</button>
     </div>
 
     <script>
-        // Load data or start with 0
         let attended = parseInt(localStorage.getItem('att')) || 0;
         let conducted = parseInt(localStorage.getItem('total')) || 0;
+        let theme = localStorage.getItem('theme') || 'light';
 
-        // Fill inputs with current values
+        document.documentElement.setAttribute('data-theme', theme);
         document.getElementById('attInput').value = attended;
         document.getElementById('totalInput').value = conducted;
+
+        function toggleTheme() {
+            theme = (theme === 'light') ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-theme', theme);
+            localStorage.setItem('theme', theme);
+        }
 
         function manualUpdate() {
             attended = parseInt(document.getElementById('attInput').value) || 0;
@@ -79,7 +100,6 @@
 
             let target = parseInt(document.getElementById('goalSelect').value) / 100;
             let per = (attended / conducted * 100).toFixed(2);
-            
             document.getElementById('percentage').innerText = per + "%";
             
             localStorage.setItem('att', attended);
@@ -89,11 +109,11 @@
             if (per < (target * 100)) {
                 let need = Math.ceil((target * conducted - attended) / (1 - target));
                 statusEl.innerText = "⚠️ Attend " + need + " more classes to hit " + (target * 100) + "%.";
-                statusEl.style.background = "#f8d7da";
+                statusEl.style.background = "#f8d7da"; statusEl.style.color = "#721c24";
             } else {
                 let skip = Math.floor((attended - target * conducted) / target);
                 statusEl.innerText = "✅ You can skip " + skip + " classes.";
-                statusEl.style.background = "#d4edda";
+                statusEl.style.background = "#d4edda"; statusEl.style.color = "#155724";
             }
         }
 
@@ -106,12 +126,11 @@
         }
 
         function resetData() {
-            if (confirm("Reset everything to 0?")) {
+            if (confirm("Reset everything?")) {
                 localStorage.clear();
                 location.reload();
             }
         }
-
         updateUI();
     </script>
 </body>
