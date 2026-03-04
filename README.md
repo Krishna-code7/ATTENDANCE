@@ -27,7 +27,7 @@ The core of this project relies on two primary mathematical models:
 
 2. **The 75% Recovery Formula:**
    $$N = \lceil \frac{0.75T - A}{0.25} \rceil$$
-   *(Calculating the minimum classes $N$ required to stabilize attendance)*
+   *(Calculating the minimum classes N required to stabilize attendance)*
 
 ---
 
