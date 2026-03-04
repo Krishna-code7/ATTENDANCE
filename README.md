@@ -23,7 +23,7 @@ The core of this project relies on two primary mathematical models:
 
 1. **Bunk Impact Logic:**
    $$P_{new} = \frac{A}{T + B} \times 100$$
-   *(Where $A$ = Attended, $T$ = Total, $B$ = Planned Bunks)*
+   *(Where A = Attended Classes, T = Total lasses, B = Planned Bunks)*
 
 2. **The 75% Recovery Formula:**
    $$N = \lceil \frac{0.75T - A}{0.25} \rceil$$
